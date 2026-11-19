@@ -1,0 +1,2 @@
+# Apache (XAMPP): impide abrir estos archivos desde el navegador
+Require all denied

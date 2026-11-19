@@ -1,0 +1,54 @@
+# Sistema de Control Escolar - infraestructura Docker Compose
+services:
+  servidor-web:
+    build: .
+    image: control-escolar-web:1.0
+    container_name: servidor_php
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: servidor-bd
+      DB_USER: nexus_user
+      DB_PASS: Nexus_2026
+      DB_NAME: sistema_escolar
+    volumes:
+      - fotos_perfil:/var/www/html/uploads/perfiles
+    depends_on:
+      servidor-bd:
+        condition: service_healthy
+    networks:
+      - red-escolar
+    restart: unless-stopped
+
+  servidor-bd:
+    image: mariadb:11.4
+    container_name: servidor_mariadb
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=-06:00
+    environment:
+      MARIADB_ROOT_PASSWORD: "NexusRoot_2026!"
+      MARIADB_DATABASE:  sistema_escolar
+      MARIADB_USER: nexus_user
+      MARIADB_PASSWORD: Nexus_2026
+    volumes:
+      - datos_mariadb:/var/lib/mysql
+      - ./Database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - red-escolar
+    restart: unless-stopped
+
+networks:
+  red-escolar:
+    driver: bridge
+
+volumes:
+  datos_mariadb:
+  fotos_perfil:
